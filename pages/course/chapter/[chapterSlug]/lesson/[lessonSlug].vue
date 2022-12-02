@@ -38,32 +38,37 @@ const course = useCourse()
 const route = useRoute()
 
 definePageMeta({
-    middleware: function ({ params }, from) {
-        const course = useCourse()
-        const chapter = course.chapters.find(
-            (c) => c.slug === params.chapterSlug
-        )
-
-        if (!chapter) {
-            return abortNavigation(
-                createError({
-                    statusCode: 404,
-                    message: `Chapter ${params.chapterSlug} not found`,
-                })
+    middleware: [
+        function ({ params }, from) {
+            const course = useCourse()
+            const chapter = course.chapters.find(
+                (c) => c.slug === params.chapterSlug
             )
-        }
 
-        const lesson = chapter.lessons.find((l) => l.slug === params.lessonSlug)
+            if (!chapter) {
+                return abortNavigation(
+                    createError({
+                        statusCode: 404,
+                        message: `Chapter ${params.chapterSlug} not found`,
+                    })
+                )
+            }
 
-        if (!lesson) {
-            return abortNavigation(
-                createError({
-                    statusCode: 404,
-                    message: `Lesson ${params.lessonSlug} not found`,
-                })
+            const lesson = chapter.lessons.find(
+                (l) => l.slug === params.lessonSlug
             )
-        }
-    },
+
+            if (!lesson) {
+                return abortNavigation(
+                    createError({
+                        statusCode: 404,
+                        message: `Lesson ${params.lessonSlug} not found`,
+                    })
+                )
+            }
+        },
+        'auth',
+    ],
 })
 
 if (route.params.lessonSlug === '3-typing-component-events') {
