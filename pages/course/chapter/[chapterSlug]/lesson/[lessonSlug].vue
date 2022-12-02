@@ -28,18 +28,47 @@
 
         <LessonCompleteButton
             :modelValue="isLessonComplete"
-            @update:modelValue="toggleComplete"
+            @update:modelValue="throwError"
         />
     </div>
 </template>
 
 <script setup>
-const title = computed(() => {
-    return `${lesson.value.title} - ${course.title}`
-})
-
 const course = useCourse()
 const route = useRoute()
+
+definePageMeta({
+    middleware: function ({ params }, from) {
+        const course = useCourse()
+        const chapter = course.chapters.find(
+            (c) => c.slug === params.chapterSlug
+        )
+
+        if (!chapter) {
+            return abortNavigation(
+                createError({
+                    statusCode: 404,
+                    message: `Chapter ${params.chapterSlug} not found`,
+                })
+            )
+        }
+
+        const lesson = chapter.lessons.find((l) => l.slug === params.lessonSlug)
+
+        if (!lesson) {
+            return abortNavigation(
+                createError({
+                    statusCode: 404,
+                    message: `Lesson ${params.lessonSlug} not found`,
+                })
+            )
+        }
+    },
+})
+
+if (route.params.lessonSlug === '3-typing-component-events') {
+    console.log(route.params.paramthatdoesntexist.capitaliseIsNotAMethod())
+}
 
 const chapter = computed(() => {
     return course.chapters.find(
@@ -51,6 +80,10 @@ const lesson = computed(() => {
     return chapter.value.lessons.find(
         (lesson) => lesson.slug === route.params.lessonSlug
     )
+})
+
+const title = computed(() => {
+    return `${lesson.value.title} - ${course.title}`
 })
 
 useHead({
@@ -76,5 +109,9 @@ const toggleComplete = () => {
     }
     progress.value[chapter.value.number - 1][lesson.value.number - 1] =
         !isLessonComplete.value
+}
+
+function throwError() {
+    throw createError('Could Not Update')
 }
 </script>
