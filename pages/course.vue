@@ -4,7 +4,7 @@
             <h1 class="text-3xl">
                 <span class="font-medium">
                     Course:
-                    <span class="font-bold">{{ title }}</span>
+                    <span class="font-bold">{{ course.title }}</span>
                 </span>
             </h1>
 
@@ -18,7 +18,7 @@
                 <h3>Chapters</h3>
                 <!-- All the lessons for the course listed here -->
                 <div
-                    v-for="chapter in chapters"
+                    v-for="chapter in course.chapters"
                     :key="chapter.slug"
                     class="mb-4 flex flex-col space-y-1"
                 >
@@ -62,12 +62,11 @@
 </template>
 
 <script setup>
-const { chapters, title } = useCourse()
+const course = await useCourse()
+const firstLesson = await useFirstLesson()
 
 async function resetError(error) {
-    throw createError({
-        fatal: true,
-        message: 'Fatal error',
-    })
+    await navigateTo(firstLesson.path)
+    error.value = null
 }
 </script>
