@@ -1,26 +1,23 @@
-import { Chapter, Lesson, LessonWithPath } from '~/types/course'
-import course from '~/server/courseData'
+import { PrismaClient } from '@prisma/client'
 
-export default defineEventHandler((event): LessonWithPath => {
+const prisma = new PrismaClient()
+
+export default defineEventHandler(async (event) => {
     const { chapterSlug, lessonSlug } = event.context.params
 
-    const chapter: Maybe<Chapter> = course.chapters.find(
-        (c) => c.slug === chapterSlug
-    )
-
-    if (!chapter) {
-        throw createError({
-            statusCode: 404,
-            message: `Chapter ${chapterSlug} not found`,
-        })
-    }
-
-    const lesson = chapter.lessons.find((l: Lesson) => l.slug === lessonSlug)
+    const lesson = await prisma.lesson.findFirst({
+        where: {
+            slug: lessonSlug,
+            Chapter: {
+                slug: chapterSlug,
+            },
+        },
+    })
 
     if (!lesson) {
         throw createError({
             statusCode: 404,
-            message: `Lesson ${lessonSlug} not found`,
+            statusMessage: 'Lesson not found',
         })
     }
 
